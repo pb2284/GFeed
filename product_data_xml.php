@@ -23,17 +23,19 @@ class ProductDataXML {
   }
 
   public function generateXML( ) {
+    $queryArgs = ['status'=>'publish', 'limit'=>-1];
+
+    $filterByCat = $this->options['gfeed_field_enable_filter_by_category']?? false;
+    if($filterByCat) {
+      $includedCats = get_option( 'gfeed_field_included_categories', [] );
+      $queryArgs['category'] = $includedCats;
+    }
+
     // get data
-    $simpleProducts = wc_get_products([
-      'status'=>'publish',
-      'type'=>'simple',
-      'limit'=> -1
-    ]);
-    $variableProducts = wc_get_products([
-      'status'=>'publish',
-      'type'=>'variable',
-      'limit'=> -1
-    ]);
+    $queryArgs['type'] = 'simple';
+    $simpleProducts = wc_get_products($queryArgs);
+    $queryArgs['type'] = 'variable';
+    $variableProducts = wc_get_products($queryArgs);
 
     // build xml
     $this->addElement($this->root, 'title', get_option('blogname'));

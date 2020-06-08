@@ -98,10 +98,51 @@ function initSettings( ) {
       'selected' => $options['gfeed_field_default_condition']?? 'new'
     ]
   );
+
+  add_settings_section(
+    'gfeed_section_filter',                 // id
+    'Filter Products',                      // title
+    'GFeed\outputSectionFilter',            // markup callback
+    'gfeed_settings'                        // page
+  );
+
+  $fbcEnabled = $options['gfeed_field_enable_filter_by_category']?? false;
+
+  add_settings_field(
+    'gfeed_field_enable_filter_by_category',
+    'Filter by Category',
+    'GFeed\fieldEnableFilterByCategory',
+    'gfeed_settings',
+    'gfeed_section_filter',
+    [
+      'enabled' => $fbcEnabled,
+      'label_for' => 'gfeed_field_enable_filter_by_category'
+    ]
+  );
+
+  register_setting(
+    'gfeed_settings',
+    'gfeed_field_included_categories'
+  );
+
+  add_settings_field(
+    'gfeed_field_included_categories',     // id
+    '',                        // title
+    'GFeed\fieldFilterByCategory',        // markup callback
+    'gfeed_settings',                     // page
+    'gfeed_section_filter',               // section
+    [
+      'label_for' => 'gfeed_field_included_categories',
+      'enabled'   => $fbcEnabled
+    ]
+  );
 }
+
+// SETTINGS FIELD CALLBACKS
 
 // this can be used to output content between the heading and fields
 function outputSectionDefaults( $args ) { /* add markup if required */ }
+function outputSectionFilter( $args ) { /* add markup if required */ }
 
 function outputTextField( $args ) {
   // ensure that the optional parameters are defined in $args
@@ -147,6 +188,72 @@ function fieldDefaultCondition( $args ) {
     <input type='radio' name='gfeed_options[<?= $fieldName; ?>]' id='gfeed-condition-refurbished' value='refurbished' class='<?= $class; ?>' <?= $args['selected']==='refurbished'? 'checked':''; ?> />
     <label for='gfeed-condition-refurbished'>Refurbished</label>
   </div>
+  <?php
+}
+
+function fieldEnableFilterByCategory( $args ) {
+  $enabled = $args['enabled'];
+  $fieldName = $args['label_for'];
+  ?>
+  <div class='gfeed-field-container'>
+    <input id='enable-filter-by-cat-cb' type='checkbox' name='gfeed_options[<?= $fieldName; ?>]' value='enabled' <?= $enabled? 'checked':''; ?> />
+    <label for='enable-filter-by-cat-cb' class='gfeed-field-label'>Do you want to filter products by category?</label>
+  </div>
+  <?php
+}
+
+// depends on fieldEnableFilterByCategory providing a checkbox element with id #enable-filter-by-cat-cb
+function fieldFilterByCategory( $args ) {
+  $fieldName = esc_attr($args['label_for']);
+  $enabled = $args['enabled'];
+
+  $allCategories = get_terms(array(
+    'taxonomy'=>'product_cat',
+    'hide_empty'=>FALSE
+  ));
+  $selectedCategories = get_option( 'gfeed_field_included_categories' );
+  if($selectedCategories === false) {
+    $selectedCategories = array_map( fn($cat) => $cat->slug, $allCategories );
+    add_option( 'gfeed_field_included_categories', $selectedCategories );
+  }
+
+  ?>
+  <div id='gfeed-categories-filter' class='gfeed-field-container' <?= $enabled? '':"style='display:none'"; ?>>
+    <label class='gfeed-field-label'>Select Categories to Include</label>
+    <div class='gfeed-flex-row'>
+      <button type='button' class='gfeed-btn' id='gfeed-select-all-cats-btn'>Select All</button>
+      <button type='button' class='gfeed-btn' id='gfeed-select-no-cats-btn'>Select None</button>
+    </div>
+    <div id='gfeed-category-filter-list'>
+      <?php foreach($allCategories as $catTerm):
+        $checked = in_array($catTerm->slug, $selectedCategories)? "checked":'';
+        $id = "gfeed-cat-cb-$catTerm->slug"; ?>
+        <div>
+          <input type='checkbox' id='<?= $id; ?>' name='<?= $fieldName.'[]'; ?>' value='<?= $catTerm->slug; ?>' <?= $checked; ?> />
+          <label for='<?= $id; ?>'><?= $catTerm->name; ?></label>
+        </div>
+      <?php endforeach; ?>
+  </div>
+  <script>
+    jQuery("#enable-filter-by-cat-cb").on('change', function(evt) {
+      var listDiv = jQuery('#gfeed-categories-filter');
+      if(evt.target.checked) {
+        listDiv.show();
+      } else {
+        listDiv.hide();
+      }
+    });
+    jQuery("#gfeed-select-all-cats-btn").on('click', (evt) => {
+      jQuery("#gfeed-category-filter-list input[type=checkbox]").each((idx, el) => {
+        el.setAttribute('checked', '');
+      });
+    });
+    jQuery("#gfeed-select-no-cats-btn").on('click', (evt) => {
+      jQuery("#gfeed-category-filter-list input[type=checkbox]").each((idx, el) => {
+        el.removeAttribute('checked');
+      });
+    });
+  </script>
   <?php
 }
 
@@ -654,7 +761,7 @@ function applySanitation($data, $method='text', $pattern='', $strict=true) {
 
 add_action( 'admin_enqueue_scripts', 'GFeed\registerAdminStyles' );
 function registerAdminStyles( $hook ) {
-  if( $hook === 'settings_page_gfeed_settings' || $hook === 'post.php' ) {
+  if( $hook === 'settings_page_gfeed_settings' ) {
     wp_enqueue_style( 'gfeed_settings_styles', plugins_url('styles.css', __FILE__), array(), 0.10 );
   }
 }
