@@ -1,0 +1,73 @@
+
+label.gfeed-field-label {
+  display: inline-block;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+
+.gfeed-radio-label {
+  margin-right: 1em;
+}
+
+.gfeed-field-description {
+  display: block;
+  margin-top: 0.5em;
+}
+
+.gfeed-field-container {
+  margin: 1rem;
+}
+
+input[type='radio'].gfeed {
+  margin-left: 1em;
+}
+
+svg.gfeed-close-icon {
+  pointer-events: visible;
+
+  flex: 0 0 auto;
+  height: 1.5rem;
+  width: 1.5rem;
+
+  --gfeed-close-stroke: red;
+  --gfeed-close-fill: white;
+}
+
+svg.gfeed-close-icon > path { pointer-events: none; }
+svg.gfeed-close-icon > path:first-child {
+  fill: var(--gfeed-close-fill);
+}
+svg.gfeed-close-icon > path:nth-child(2) {
+  stroke: var(--gfeed-close-stroke);
+  fill: var(--gfeed-close-fill);
+}
+
+svg.gfeed-close-icon:hover {
+  --gfeed-close-stroke: white;
+  --gfeed-close-fill: red;
+}
+
+#gfeed-extra-images-table {
+  margin: 1rem 0;
+  border-spacing: 1rem 0.3rem;
+}
+
+#gfeed-extra-images-table td {
+  padding: 0;
+}
+
+#gfeed-extra-images-table input[type='text'] {
+  width: 100%;
+}
+
+#gfeed-attr-map-table {
+  border-spacing: 1rem 0.3rem;
+}
+
+#gfeed-attr-map-table td {
+  text-align: center;
+}
+
+#gfeed-attr-map-table th {
+  border-bottom: 1px solid grey;
+}
