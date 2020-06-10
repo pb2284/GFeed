@@ -2,7 +2,7 @@
 /*
 Plugin Name: GFeed
 Description: Generates an XML product data feed for use with the Google Merchant Center.
-Version: 1.3.0
+Version: 1.3.1
 Author: Paul Bilinas
 */
 
@@ -494,6 +494,9 @@ function maybeInsertGoogleAttributeMapping( $id ) {
   }
 
   $attrMap = $product->get_meta( 'gfeed_attr_map', true );
+  if(!$attrMap) {
+    $attrMap = [];
+  }
   $productAttrs =  array_keys($product->get_variation_attributes());
 
   ?>
