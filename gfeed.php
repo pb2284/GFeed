@@ -213,7 +213,7 @@ function fieldFilterByCategory( $args ) {
   ));
   $selectedCategories = get_option( 'gfeed_field_included_categories' );
   if($selectedCategories === false) {
-    $selectedCategories = array_map( fn($cat) => $cat->slug, $allCategories );
+    $selectedCategories = array_map( function($cat) { return $cat->slug; }, $allCategories );
     add_option( 'gfeed_field_included_categories', $selectedCategories );
   }
 
@@ -761,7 +761,7 @@ function applySanitation($data, $method='text', $pattern='', $strict=true) {
 
 add_action( 'admin_enqueue_scripts', 'GFeed\registerAdminStyles' );
 function registerAdminStyles( $hook ) {
-  if( $hook === 'settings_page_gfeed_settings' ) {
+  if( $hook === 'settings_page_gfeed_settings' || ( $hook === 'post.php' ) ) {
     wp_enqueue_style( 'gfeed_settings_styles', plugins_url('styles.css', __FILE__), array(), 0.10 );
   }
 }
